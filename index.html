@@ -169,9 +169,7 @@
                 gsap.to("#birthday-text", { opacity: 1, duration: 1.5, ease: "power2.out" });
             }
 
-            // FIX: face tracking isolated so a failure can't kill the scene.
-            // Also removed `const FaceMesh = window.FaceMesh; const Camera = window.Camera;`
-            // which can throw "Identifier has already been declared" and stop the whole script.
+            
             try {
                 const faceMesh = new FaceMesh({
                     locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
