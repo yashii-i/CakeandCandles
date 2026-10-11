@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>3D Birthday Card</title>
+        <link rel="stylesheet" href="style.css">
+        
+        <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    </head>
+    
+<body>
+    <video id="webcam" autoplay playsinline style="display: none;"></video>
+    <p id="status-text">Connecting face tracking stream...</p>
+    
+    <div id="canvas-container"></div>
+    <h1 id="birthday-text">Happy Birthday Kigu!!</h1>
+    
+    
+    <script>
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a14);
+    
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3.5, 13);
+            camera.lookAt(0, 1.8, 0);
+    
+            
+            const ambientlight = new THREE.AmbientLight(0xffffff, 0.9);
+            scene.add(ambientlight);
+            
+            const keyLight = new THREE.DirectionalLight(0xfff4d4, 1.5); // Intense warm key light simulating a direct spotlight beam
+            keyLight.position.set(5, 10, 7);
+            scene.add(keyLight);
+
+            const warmlight = new THREE.PointLight(0xffb703, 1.5);
+            warmlight.position.set(3, 6, 4);
+            scene.add(warmlight);
+
+            const spotLight = new THREE.DirectionalLight(0xffffff, 1.8);
+            spotLight.position.set(0, 8, 6);
+            scene.add(spotLight);
+    
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const cakeGroup = new THREE.Group();
+            scene.add(cakeGroup);
+    
+            
+            const layergeo1 = new THREE.CylinderGeometry(2.8, 2.9, 1.4, 32);
+            const layerMat1 = new THREE.MeshStandardMaterial({ color: 0xff6a00, roughness: 0.15, metalness: 0.1 });
+            const layer1 = new THREE.Mesh(layergeo1, layerMat1);
+            layer1.position.y = 12;
+            cakeGroup.add(layer1);
+    
+            
+            const layergeo2 = new THREE.CylinderGeometry(2.1, 2.2, 1.1, 32);
+            const layerMat2 = new THREE.MeshStandardMaterial({ color: 0xffb703, roughness: 0.15, metalness: 0.1 });
+            const layer2 = new THREE.Mesh(layergeo2, layerMat2);
+            layer2.position.y = 17;
+            cakeGroup.add(layer2);
+    
+            
+            const layergeo3 = new THREE.CylinderGeometry(1.4, 1.5, 0.9, 32);
+            const layerMat3 = new THREE.MeshStandardMaterial({ color: 0xfff4d4, roughness: 0.1 });
+            const layer3 = new THREE.Mesh(layergeo3, layerMat3);
+            layer3.position.y = 22;
+            cakeGroup.add(layer3);
+    
+            
+            const CandleGeo1 = new THREE.CylinderGeometry(0.05, 0.05, 1.0, 16);
+            const CandleMat = new THREE.MeshStandardMaterial({ color: 0x5C134F, roughness: 0.3 }); // Sleek red accent candle stick
+            const candle = new THREE.Mesh(CandleGeo1, CandleMat);
+            candle.position.y = 27;
+            cakeGroup.add(candle);
+    
+            
+            const flamegeo1 = new THREE.ConeGeometry(0.12, 0.35, 16);
+            const flamemat1 = new THREE.MeshStandardMaterial({ color: 0xFF4500, roughness: 0.1 });
+            const flame = new THREE.Mesh(flamegeo1, flamemat1);
+            flame.position.y = 0.55;
+            candle.add(flame);
+    
+            const tl = gsap.timeline({ delay: 0.5 });
+            tl.to(layer1.position, { y: 0.7, duration: 1.2, ease: "bounce.out" });     
+            tl.to(layer2.position, { y: 1.95, duration: 1.0, ease: "bounce.out" }, "-=0.4");   
+            tl.to(layer3.position, { y: 2.95, duration: 0.9, ease: "bounce.out" }, "-=0.3");   
+            tl.to(candle.position, { y: 3.9, duration: 0.8, ease: "bounce.out" }, "-=0.25");   
+
+            const picturesGroup = new THREE.Group(); 
+            scene.add(picturesGroup);
+    
+            const stringGeo = new THREE.CylinderGeometry(0.012, 0.012, 12, 8);
+            const stringMat = new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.5 });
+            const stringWire = new THREE.Mesh(stringGeo, stringMat);
+            stringWire.position.set(0, 7.4, -5.6);            
+            stringWire.rotation.z = Math.PI / 2;
+            picturesGroup.add(stringWire);
+            
+            const photoGeo = new THREE.PlaneGeometry(2.2, 2.8);
+            const textureLoader = new THREE.TextureLoader();
+    
+            const imageUrls = [
+                "IMG_5075.png",
+                "IMG_4310.png",
+                "IMG_5034.png"
+            ];
+    
+            const positionsX = [-4.2, 0, 4.8];
+            const positionsY = [6.7, 6.7, 6.7];
+            const rotationsZ = [0.08, -0.03, -0.06];
+            const cropBottom = [0, 0.16, 0];
+    
+            imageUrls.forEach((url, index) => {
+                const photoTexture = textureLoader.load(url, undefined, undefined,
+                    () => console.error("Could not load image:", url));
+                photoTexture.colorSpace = THREE.SRGBColorSpace;
+            
+                const photoMat = new THREE.MeshBasicMaterial({ 
+                map: photoTexture, 
+                side: THREE.DoubleSide 
+            });
+
+                const card = new THREE.Mesh(photoGeo, photoMat);
+                card.position.set(positionsX[index], positionsY[index], -5.5);               
+                card.rotation.z = rotationsZ[index];
+                picturesGroup.add(card);
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+    
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                cakeGroup.rotation.y += 0.005;
+                
+                picturesGroup.children.forEach((item, index) => {
+                    if (index > 0) {
+                        item.rotation.z += Math.sin(Date.now() * 0.0012 + index) * 0.0004;
+                    }
+                });
+    
+                if (flame.visible) {
+                    flame.scale.setScalar(1 + Math.sin(Date.now() * 0.035) * 0.15);
+                }
+                renderer.render(scene, camera);
+            }
+
+            // FIX: start rendering BEFORE face tracking so the scene always shows
+            animate();
+            
+            const videoElement = document.getElementById('webcam');
+            const statusText = document.getElementById('status-text');
+            let candleIsBlownOut = false;
+
+            function extinguishCandle() {
+                candleIsBlownOut = true;
+                flame.visible = false; 
+                if (statusText) statusText.style.opacity = "0";
+                gsap.to("#birthday-text", { opacity: 1, duration: 1.5, ease: "power2.out" });
+            }
+
+            // FIX: face tracking isolated so a failure can't kill the scene.
+            // Also removed `const FaceMesh = window.FaceMesh; const Camera = window.Camera;`
+            // which can throw "Identifier has already been declared" and stop the whole script.
+            try {
+                const faceMesh = new FaceMesh({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+                });
+
+                faceMesh.setOptions({
+                    maxNumFaces: 1,
+                    refineLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                faceMesh.onResults((results) => {
+                    if (candleIsBlownOut || !results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) return;
+
+                    if (statusText && statusText.innerText !== "Ready! Blow to blow out the candle!") {
+                        statusText.innerText = "Ready! Blow to blow out the candle!";
+                    }
+
+                    const landmarks = results.multiFaceLandmarks[0];
+                    const topLip = landmarks[13];
+                    const bottomLip = landmarks[14];
+
+                    const lipDistance = Math.sqrt(
+                        Math.pow(topLip.x - bottomLip.x, 2) +
+                        Math.pow(topLip.y - bottomLip.y, 2) +
+                        Math.pow(topLip.z - bottomLip.z, 2)
+                    );
+
+                    if (lipDistance > 0.052) { 
+                        extinguishCandle();
+                    }
+                });
+
+                const cameraFeed = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await faceMesh.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+                cameraFeed.start().catch(err => {
+                    statusText.innerText = "Camera blocked: " + err.message;
+                });
+            } catch (e) {
+                statusText.innerText = "Face tracking failed to load";
+                console.error(e);
+            }
+    </script>
+</body>
+</html>

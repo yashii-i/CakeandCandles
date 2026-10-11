@@ -1,0 +1,54 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #05050a;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+#canvas-container {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#birthday-text {
+    position: absolute;
+    bottom: 8%;              
+    left: 50%;               
+    transform: translateX(-50%); 
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #ffb703;          
+    text-shadow: 0 0 20px rgba(255, 183, 3, 0.5), 0 4px 12px rgba(0, 0, 0, 0.7);
+    z-index: 10;
+    text-align: center;
+    white-space: nowrap;     
+    opacity: 0; 
+    transition: opacity 1.5s ease-in-out; 
+}
+
+  
+#status-text {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    z-index: 20;
+    pointer-events: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.5s ease;
+}
